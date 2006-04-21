@@ -1,0 +1,99 @@
+<?php
+
+/*
+ TODO:
+  1. Need to somehow change the weight of remember_me checkbox to be up
+     the button in block user login form.
+  2. Make some _help description.
+  3. Performance issue: always updating user info in database.
+
+*/
+
+
+function remember_me_init() {
+  global $user;
+
+  // If we have user logged in, then we have session started.
+  if($user->uid) {
+
+    // Get the cookie life time.
+    $cookie_lifetime = ini_get('session.cookie_lifetime');
+
+    if($user->remember_me) {
+      // If we have no cookie life time set already then set it.
+      if(0 == $cookie_lifetime) {
+        _remember_me_set_lifetime(2000000);
+      }
+
+    }
+    else {
+      // If we have cookie life time set already then unset it.
+      if(0 != $cookie_lifetime) {
+        _remember_me_set_lifetime(0);
+      }
+
+    }
+
+  }
+
+}
+
+
+
+function _remember_me_set_lifetime($cookie_lifetime) {
+  // We have session started.
+  // We need to commit it, change php variable, and start session again.
+  session_write_close();
+
+  ini_set('session.cookie_lifetime', $cookie_lifetime);
+
+  session_set_save_handler("sess_open", "sess_close", "sess_read", "sess_write", "sess_destroy", "sess_gc");
+  session_start();
+}
+
+
+
+
+function remember_me_user($type, &$edit, &$user, $category = NULL) {
+
+//  $user_login_forms = array('user_login', 'user_login_block');
+
+  if(NULL === $category && 'login' == $type) {
+    $remember_me = isset($edit['remember_me']) ? $edit['remember_me'] : NULL;
+    if(isset($remember_me)) {
+      if(!$remember_me) {
+        ini_set('session.cookie_lifetime', '0');
+      }
+      else {
+        ini_set('session.cookie_lifetime',  2000000); // ~23 days. This value was
+      }                                                // in base Drupal settings.
+
+      if($user->uid) {
+        $user = user_save($user, array('remember_me' => (bool)$remember_me), NULL);
+      }
+    }
+
+  }
+
+}
+
+
+function remember_me_form_alter($form_id, &$form) {
+
+  $user_login_forms = array('user_login', 'user_login_block');
+
+  if(in_array($form_id, $user_login_forms)) {
+
+    $form['remember_me'] = array(
+      '#title' => t('Remember me'),
+      '#type' => 'checkbox',
+//      '#maxlength' => 128,
+//      '#description' => "This will be used to generate a <em>taxonomy/term/&lt;short title&gt;</em> URLs for your term. Leave this field blank if you don't want to have short title for this term.",
+//      '#default_value' => $user->remember_me,
+      '#weight' => 1,
+//      '#required' => TRUE,
+
+    );
+  }
+
+}
