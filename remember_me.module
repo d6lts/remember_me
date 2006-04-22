@@ -56,8 +56,6 @@ function _remember_me_set_lifetime($cookie_lifetime) {
 
 function remember_me_user($type, &$edit, &$user, $category = NULL) {
 
-//  $user_login_forms = array('user_login', 'user_login_block');
-
   if(NULL === $category && 'login' == $type) {
     $remember_me = isset($edit['remember_me']) ? $edit['remember_me'] : NULL;
     if(isset($remember_me)) {
@@ -87,11 +85,7 @@ function remember_me_form_alter($form_id, &$form) {
     $form['remember_me'] = array(
       '#title' => t('Remember me'),
       '#type' => 'checkbox',
-//      '#maxlength' => 128,
-//      '#description' => "This will be used to generate a <em>taxonomy/term/&lt;short title&gt;</em> URLs for your term. Leave this field blank if you don't want to have short title for this term.",
-//      '#default_value' => $user->remember_me,
       '#weight' => 1,
-//      '#required' => TRUE,
 
     );
   }
