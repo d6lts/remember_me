@@ -5,15 +5,7 @@
  * @file
  * Puts a "Remember me" checkbox to login forms.
  *
- *
- * TODO:
- *  1. Need to somehow change the weight of remember_me checkbox to be up
- *     the button in block user login form.
- *  2. Make some _help description.
- *  3. Performance issue: always updating user info in database.
- *
  */
-
 
 /**
  * Implementation of hook_init().
@@ -66,7 +58,6 @@ function _remember_me_set_lifetime($cookie_lifetime) {
 /**
  * Implementation of hook_user().
  */
-
 function remember_me_user($type, &$edit, &$user, $category = NULL) {
 
   if (NULL === $category && 'login' == $type) {
@@ -91,19 +82,16 @@ function remember_me_user($type, &$edit, &$user, $category = NULL) {
 /**
  * Implementation of hook_form_alter().
  */
-
 function remember_me_form_alter($form_id, &$form) {
 
   $user_login_forms = array('user_login', 'user_login_block');
 
   if (in_array($form_id, $user_login_forms)) {
-
     $form['remember_me'] = array(
       '#title' => t('Remember me'),
       '#type' => 'checkbox',
       '#weight' => 1,
-
     );
   }
-
 }
+
