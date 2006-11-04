@@ -1,3 +1,4 @@
 ; $Id$
 name = Remember me
+description = Allows users to have persistent sessions via a checkbox on the login form.
 package = Optional
