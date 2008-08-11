@@ -2,3 +2,9 @@
 name = Remember me
 description = Allows users to have persistent sessions via a checkbox on the login form.
 package = Optional
+
+; Information added by drupal.org packaging script on 2007-10-14
+version = "5.x-1.0-Patched"
+project = "remember_me"
+datestamp = "1192351505"
+

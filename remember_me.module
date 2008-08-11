@@ -5,9 +5,6 @@
  * @file
  * Puts a "Remember me" checkbox to login forms.
  *
- * @todo
- *   User object data field will have 'remember_me' key forever after you
- *   disable the module.
  */
 
 /**
@@ -22,21 +19,18 @@ function remember_me_init() {
     // Get the cookie life time.
     $cookie_lifetime = ini_get('session.cookie_lifetime');
 
-    if ($user->remember_me) {
-      // If we have no cookie life time set already then set it.
-      if (0 == $cookie_lifetime) {
-        _remember_me_set_lifetime(2000000);
+    if ($user->remember_me && variable_get('remember_me_managed', 0) != 0) {
+      // Set lifetime as configured via admin settings.
+      if (variable_get('remember_me_lifetime', 604800) != $cookie_lifetime) {
+        _remember_me_set_lifetime(variable_get('remember_me_lifetime', 604800));
       }
-
     }
-    else {
+    else if (!$user->remember_me) {
       // If we have cookie life time set already then unset it.
       if (0 != $cookie_lifetime) {
         _remember_me_set_lifetime(0);
       }
-
     }
-
   }
 }
 
@@ -45,8 +39,11 @@ function remember_me_init() {
  */
 function _remember_me_set_lifetime($cookie_lifetime) {
   // We have session started.
-  // We need to commit it, change php variable, and start session again.
+  // Lets close the session, change php cookie lifetime variable, and start session again.
+  // Prevent sess_write from persisting the session object at this time, it will happen on shutdown.
+  session_save_session(FALSE);
   session_write_close();
+  session_save_session(TRUE);
 
   ini_set('session.cookie_lifetime', $cookie_lifetime);
 
@@ -79,19 +76,10 @@ function remember_me_user($type, &$edit, &$user, $category = NULL) {
   if (NULL === $category && 'login' == $type) {
     $remember_me = isset($edit['remember_me']) ? $edit['remember_me'] : NULL;
     if (isset($remember_me)) {
-      if (!$remember_me) {
-        ini_set('session.cookie_lifetime', '0');
-      }
-      else {
-        // 2000000 is ~23 days. This value is in basic Drupal settings.
-        ini_set('session.cookie_lifetime', 2000000);
-      }
-
       if ($user->uid) {
         $user = user_save($user, array('remember_me' => (bool)$remember_me), NULL);
       }
     }
-
   }
 }
 
@@ -107,6 +95,7 @@ function remember_me_form_alter($form_id, &$form) {
     $form1['remember_me'] = array(
       '#title' => t('Remember me'),
       '#type' => 'checkbox',
+      '#default_value' => variable_get('remember_me_checkbox', 0),
     );
     _remember_me_array_insert_after_key('pass', $form, $form1);
   }
@@ -140,4 +129,65 @@ function _remember_me_array_insert_after_key($search_key, &$array, $elements_to_
   $array1 = $array1 + $elements_to_insert;
 
   $array = $array1 + $array2;
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function remember_me_menu($may_cache) {
+  $items = array();
+
+  if ($may_cache) {
+    $items[] = array(
+      'path'               => 'admin/settings/remember_me',
+      'title'              => t('Remember me'),
+      'description'        => t('Configure settings like session time out for remember_me module.'),
+      'callback'           => 'drupal_get_form',
+      'callback arguments' => array('remember_me_admin_settings'),
+      'access'             => user_access('administer site configuration'),
+      'type'               => MENU_NORMAL_ITEM
+    );
+  }
+  return $items;
+}
+
+/**
+ * Implementation of hook_help
+ */
+function remember_me_help($section) {
+  switch ($section) {
+    case 'admin/help#remember_me' :
+      return t('Allows users to have persistent sessions via a checkbox "Remember me" on the login form.');
+  }
+}
+
+/**
+ * Implementation of menu callback
+ */
+function remember_me_admin_settings() {
+  $options = drupal_map_assoc(array(3600, 10800, 21600, 43200, 86400, 172800, 259200, 604800, 1209600, 2419200), 'format_interval');
+
+  $form['remember_me_managed'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Manage session lifetime'),
+    '#default_value' => variable_get('remember_me_managed', 0),
+    '#description' => t('Should the lifetime configuration in settings.php be ignored and managed by this module?'),
+  );
+
+  $form['remember_me_lifetime'] = array(
+    '#type' => 'select',
+    '#title' => t('Lifetime'),
+    '#default_value' => variable_get('remember_me_lifetime', 604800),
+    '#options' => $options,
+    '#description' => t('Duration to keep users logged in if they check "Remember me" option on the login form. This value is ignored if Manage session lifetime (above) is not enabled.'),
+  );
+
+  $form['remember_me_checkbox'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Remember me'),
+    '#default_value' => variable_get('remember_me_checkbox', 0),
+    '#description' => t('Default state for "Remember me" on the login form.'),
+  );
+
+  return system_settings_form($form);
 }
