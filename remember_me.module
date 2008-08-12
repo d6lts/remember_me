@@ -98,6 +98,10 @@ function remember_me_form_alter($form_id, &$form) {
       '#default_value' => variable_get('remember_me_checkbox', 0),
     );
     _remember_me_array_insert_after_key('pass', $form, $form1);
+    $form['name']['#attributes']['tabindex'] = '1';
+    $form['pass']['#attributes']['tabindex'] = '2';
+    $form['remember_me']['#attributes']['tabindex'] = '3';
+    $form['submit']['#attributes']['tabindex'] = '4';
   }
 }
 
