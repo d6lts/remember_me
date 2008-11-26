@@ -3,7 +3,7 @@
 
 /**
  * @file
- * Puts a "Remember me" checkbox to login forms.
+ * Puts a "Remember me" checkbox on the login forms.
  *
  */
 
@@ -86,22 +86,22 @@ function remember_me_user($type, &$edit, &$user, $category = NULL) {
 /**
  * Implementation of hook_form_alter().
  */
-function remember_me_form_alter($form_id, &$form) {
+function remember_me_form_alter(&$form, $form_state, $form_id) {
   $user_login_forms = array('user_login', 'user_login_block');
 
   if (in_array($form_id, $user_login_forms)) {
-    // Try to insert 'Remember me' checkbox between 'Username', 'Password' and
+    // Insert 'Remember me' checkbox between 'Username', 'Password' and
     // 'Log in' form elements.
     $form1['remember_me'] = array(
       '#title' => t('Remember me'),
       '#type' => 'checkbox',
       '#default_value' => variable_get('remember_me_checkbox', 0),
+	  '#attributes' => array('tabindex' => '3'),
     );
-    _remember_me_array_insert_after_key('pass', $form, $form1);
     $form['name']['#attributes']['tabindex'] = '1';
     $form['pass']['#attributes']['tabindex'] = '2';
-    $form['remember_me']['#attributes']['tabindex'] = '3';
     $form['submit']['#attributes']['tabindex'] = '4';
+    _remember_me_array_insert_after_key('pass', $form, $form1);
   }
 }
 
@@ -138,27 +138,23 @@ function _remember_me_array_insert_after_key($search_key, &$array, $elements_to_
 /**
  * Implementation of hook_menu().
  */
-function remember_me_menu($may_cache) {
+function remember_me_menu() {
   $items = array();
-
-  if ($may_cache) {
-    $items[] = array(
-      'path'               => 'admin/settings/remember_me',
-      'title'              => t('Remember me'),
-      'description'        => t('Configure settings like session time out for remember_me module.'),
-      'callback'           => 'drupal_get_form',
-      'callback arguments' => array('remember_me_admin_settings'),
-      'access'             => user_access('administer site configuration'),
-      'type'               => MENU_NORMAL_ITEM
-    );
-  }
+  $items['admin/settings/remember_me'] = array(
+    'title' => 'Remember me',
+    'description' => 'Configure settings like session time out for remember_me module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('remember_me_admin_settings'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM
+  );
   return $items;
 }
 
 /**
  * Implementation of hook_help
  */
-function remember_me_help($section) {
+function remember_me_help($section, $arg) {
   switch ($section) {
     case 'admin/help#remember_me' :
       return t('Allows users to have persistent sessions via a checkbox "Remember me" on the login form.');
