@@ -1,20 +1,19 @@
 <?php
-// $Id:
+// $Id$
+
 /**
- * Implementation of hook_install()
+ * @file
+ * Contains install and update functions for remember_me.
+ */
+
+/**
+ * Implementation of hook_install().
  */
 function remember_me_install() {
   // Place session management first in the module queue
   db_query("UPDATE {system} SET weight = -99 WHERE name = 'remember_me'");
 }
-/**
- * Added update for sites where module is already installed.
- */
-/*function remember_me_update_1() {
-  // Place session management first in the module queue
-  $ret[] = update_sql("UPDATE {system} SET weight = -99 WHERE name = 'remember_me'");
-  return $ret;
-}*/
+
 /**
  * Implementation of hook_disable().
  */
@@ -30,4 +29,3 @@ function remember_me_disable() {
   sess_gc(0);
   drupal_set_message(t('Successfully removed the remember_me key from all user objects.'));
 }
-

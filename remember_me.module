@@ -3,7 +3,7 @@
 
 /**
  * @file
- * Puts a "Remember me" checkbox on the login forms.
+ * Adds a "Remember me" checkbox to login forms.
  *
  */
 
@@ -13,21 +13,17 @@
 function remember_me_init() {
   global $user;
 
-  // If we have user logged in, then we have session started.
+  // If we have a user logged in, then we have a session.
   if ($user->uid) {
-
-    // Get the cookie life time.
-    $cookie_lifetime = ini_get('session.cookie_lifetime');
-
     if ($user->remember_me && variable_get('remember_me_managed', 0) != 0) {
       // Set lifetime as configured via admin settings.
-      if (variable_get('remember_me_lifetime', 604800) != $cookie_lifetime) {
+      if (variable_get('remember_me_lifetime', 604800) != ini_get('session.cookie_lifetime')) {
         _remember_me_set_lifetime(variable_get('remember_me_lifetime', 604800));
       }
     }
     else if (!$user->remember_me) {
-      // If we have cookie life time set already then unset it.
-      if (0 != $cookie_lifetime) {
+      // If we have cookie lifetime set already then unset it.
+      if (0 != ini_get('session.cookie_lifetime')) {
         _remember_me_set_lifetime(0);
       }
     }
@@ -39,8 +35,10 @@ function remember_me_init() {
  */
 function _remember_me_set_lifetime($cookie_lifetime) {
   // We have session started.
-  // Lets close the session, change php cookie lifetime variable, and start session again.
-  // Prevent sess_write from persisting the session object at this time, it will happen on shutdown.
+  // Lets close the session, change php cookie lifetime variable, and start
+  // session again.
+  // Prevent sess_write from persisting the session object at this time,
+  // it will happen on shutdown.
   session_save_session(FALSE);
   session_write_close();
   session_save_session(TRUE);
@@ -49,7 +47,14 @@ function _remember_me_set_lifetime($cookie_lifetime) {
 
   // Use remember_me_sess_read() to avoid reloading of user object, because
   // it might be once more reloaded in some other hook_init().
-  session_set_save_handler("sess_open", "sess_close", "remember_me_sess_read", "sess_write", "sess_destroy_sid", "sess_gc");
+  session_set_save_handler(
+    "sess_open",
+    "sess_close",
+    "remember_me_sess_read",
+    "sess_write",
+    "sess_destroy_sid",
+    "sess_gc"
+  );
   session_start();
 }
 
@@ -59,12 +64,10 @@ function _remember_me_set_lifetime($cookie_lifetime) {
 function remember_me_sess_read() {
   global $user;
   static $run = FALSE;
-
   if (!$run) {
     $run = TRUE;
     return !empty($user->session) ? $user->session : '';
   }
-
   $args = func_get_args();
   return call_user_func_array('sess_read', $args);
 }
@@ -72,13 +75,19 @@ function remember_me_sess_read() {
 /**
  * Implementation of hook_user().
  */
-function remember_me_user($type, &$edit, &$user, $category = NULL) {
-  if (NULL === $category && 'login' == $type) {
+function remember_me_user($op, &$edit, &$user, $category = NULL) {
+  if ($category === NULL && $op == 'login') {
     $remember_me = isset($edit['remember_me']) ? $edit['remember_me'] : NULL;
     if (isset($remember_me)) {
       if ($user->uid) {
-        $user = user_save($user, array('remember_me' => (bool)$remember_me), NULL);
+        $user = user_save($user, array(
+          'remember_me' => (bool) $remember_me,
+        ), NULL);
       }
+    }
+    if (variable_get('remember_me_phantom_session', 0)) {
+      module_load_include('inc', 'remember_me', 'includes/remember_me');
+      remember_me_manage_phantom_sessions();
     }
   }
 }
@@ -90,49 +99,21 @@ function remember_me_form_alter(&$form, $form_state, $form_id) {
   $user_login_forms = array('user_login', 'user_login_block');
 
   if (in_array($form_id, $user_login_forms)) {
-    // Insert 'Remember me' checkbox between 'Username', 'Password' and
-    // 'Log in' form elements.
-    $form1['remember_me'] = array(
-      '#title' => t('Remember me'),
-      '#type' => 'checkbox',
-      '#default_value' => variable_get('remember_me_checkbox', 0),
-	  '#attributes' => array('tabindex' => '3'),
-    );
-    $form['name']['#attributes']['tabindex'] = '1';
-    $form['pass']['#attributes']['tabindex'] = '2';
-    $form['submit']['#attributes']['tabindex'] = '4';
-    _remember_me_array_insert_after_key('pass', $form, $form1);
+    module_load_include('inc', 'remember_me', 'includes/remember_me');
+    remember_me_insert_checkbox($form);
   }
 }
 
 /**
- * Insert elements into array after the element with $searck_key key and
- * maintain index association.
- *
- * @param $search_key
- *   Key of array element to insert elements after.
- * @param $array
- *   Given array.
- * @param $elements_to_insert
- *   Array of elements to be inserted.
+ * Implementation of hook_theme().
  */
-function _remember_me_array_insert_after_key($search_key, &$array, $elements_to_insert) {
-  // Split array into two arrays: prior $search_key element including
-  // $search_key element and after $search_key element.
-  $array1 = array();
-  $array2 = array();
-  $curr_array = &$array1;
-  foreach ($array as $key => $value) {
-    $curr_array[$key] = $value;
-    if ($search_key == $key) {
-      $curr_array = &$array2;
-    }
-  }
-
-  // Add $elements_to_insert to the end of the first array.
-  $array1 = $array1 + $elements_to_insert;
-
-  $array = $array1 + $array2;
+function remember_me_theme() {
+  return array(
+    'remember_me_settings_display' => array(
+      'arguments' => array('vars' => array()),
+      'file' => 'includes/remember_me.admin.inc',
+    ),
+  );
 }
 
 /**
@@ -141,53 +122,51 @@ function _remember_me_array_insert_after_key($search_key, &$array, $elements_to_
 function remember_me_menu() {
   $items = array();
   $items['admin/settings/remember_me'] = array(
-    'title' => 'Remember me',
-    'description' => 'Configure settings like session time out for remember_me module.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('remember_me_admin_settings'),
+    'title'            => 'Remember me settings',
+    'description'      => 'Configure settings like session time out for remember_me module.',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('remember_me_admin_settings'),
     'access arguments' => array('administer site configuration'),
-    'type' => MENU_NORMAL_ITEM
+    'file'             => 'includes/remember_me.admin.inc',
+    'type'             => MENU_NORMAL_ITEM
   );
+
+  $base = array(
+    'type'             => MENU_CALLBACK,
+    'access arguments' => array('administer site configuration'),
+    'file'             => 'includes/remember_me.users.inc',
+  );
+
+  $items['remember_me/ajax/users/online'] = array(
+    'page callback'    => 'remember_me_ajax_users_online',
+  ) + $base;
+
+  $items['admin/settings/remember_me/users/online'] = array(
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('remember_me_ajax_users_online_form'),
+    'title'            => "'Who's online' settings",
+  ) + $base;
+
+  $base = array(
+    'type'             => MENU_CALLBACK,
+    'access arguments' => array('administer site configuration'),
+    'file'             => 'includes/remember_me.test.inc',
+  );
+
+  $items['remember_me/test'] = array(
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('test_fapi_edit'),
+  ) + $base;
+
   return $items;
 }
 
 /**
- * Implementation of hook_help
+ * Implementation of hook_help().
  */
-function remember_me_help($section, $arg) {
-  switch ($section) {
+function remember_me_help($path, $arg) {
+  switch ($path) {
     case 'admin/help#remember_me' :
       return t('Allows users to have persistent sessions via a checkbox "Remember me" on the login form.');
   }
-}
-
-/**
- * Implementation of menu callback
- */
-function remember_me_admin_settings() {
-  $options = drupal_map_assoc(array(3600, 10800, 21600, 43200, 86400, 172800, 259200, 604800, 1209600, 2419200), 'format_interval');
-
-  $form['remember_me_managed'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Manage session lifetime'),
-    '#default_value' => variable_get('remember_me_managed', 0),
-    '#description' => t('Should the lifetime configuration in settings.php be ignored and managed by this module?'),
-  );
-
-  $form['remember_me_lifetime'] = array(
-    '#type' => 'select',
-    '#title' => t('Lifetime'),
-    '#default_value' => variable_get('remember_me_lifetime', 604800),
-    '#options' => $options,
-    '#description' => t('Duration to keep users logged in if they check "Remember me" option on the login form. This value is ignored if Manage session lifetime (above) is not enabled.'),
-  );
-
-  $form['remember_me_checkbox'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Remember me'),
-    '#default_value' => variable_get('remember_me_checkbox', 0),
-    '#description' => t('Default state for "Remember me" on the login form.'),
-  );
-
-  return system_settings_form($form);
 }
