@@ -7,15 +7,15 @@
  */
 
 /**
- * Manage dead sessions.
+ * Manage phantom sessions.
  *
  * When a user closes their browser their session cookie expires. If the user
  * chose to be forgotten they will not be allowed to use the old session.
- * These dead sessions still appear in Who's online block and will show duplicate
- * names. If configured to do so, via settings page, set dead session's timeout period
+ * These phantom sessions still appear in Who's online block and will show duplicate
+ * names. If configured to do so, via settings page, set phantom session's timeout period
  * outside of the Who's online block's display period.
  */
-function remember_me_manage_dead_sessions() {
+function remember_me_manage_phantom_sessions() {
   global $user;
   $interval = time() - variable_get('user_block_seconds_online', 900);
   $count = db_result(
@@ -26,7 +26,7 @@ function remember_me_manage_dead_sessions() {
   );
   if ($count > 0) {
     watchdog('remember_me',
-      t('Dead session managed for %user, session trapped within %time timeout.',
+      t('Phantom session managed for %user, session trapped within %time timeout.',
         array(
           '%user' => $user->name,
           '%id'   => $user-uid,
