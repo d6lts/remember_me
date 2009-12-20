@@ -50,7 +50,7 @@ function remember_me_insert_checkbox(&$form) {
   $form1['remember_me'] = array(
     '#title'         => t('Remember me'),
     '#type'          => 'checkbox',
-    '#default_value' => variable_get('remember_me_checkbox', 0),
+    '#default_value' => variable_get('remember_me_checkbox', 1),
   );
   _remember_me_array_insert_after_key('pass', $form, $form1);
   $form['name']['#attributes']['tabindex']        = '1';
