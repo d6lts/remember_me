@@ -17,13 +17,8 @@
  */
 function remember_me_manage_phantom_sessions() {
   global $user;
-  $interval = time() - variable_get('user_block_seconds_online', 900);
-  $count = db_result(
-    db_query("SELECT COUNT(uid) FROM {sessions} WHERE uid = %d AND timestamp >= %d",
-      $user->uid,
-      $interval
-    )
-  );
+  $interval = REQUEST_TIME - variable_get('user_block_seconds_online', 900);
+  $count = db_query("SELECT COUNT(uid) FROM {sessions} WHERE uid = :uid AND timestamp >= :timestamp", array(':uid' => $user->uid, ':timestamp' => $interval))->fetchField();
   if ($count > 0) {
     watchdog('remember_me',
       t('Phantom session managed for %user, session trapped within %time timeout.'),
@@ -34,11 +29,15 @@ function remember_me_manage_phantom_sessions() {
       ),
       WATCHDOG_NOTICE
     );
-    db_query("UPDATE {sessions} SET timestamp = %d WHERE uid = %d AND timestamp >= %d",
-      $interval - 1,
-      $user->uid,
-      $interval
-    );
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("UPDATE {sessions} SET timestamp = %d WHERE uid = %d AND timestamp >= %d", $interval - 1, $user->uid, $interval) */
+db_update('sessions')
+  ->fields(array(
+    'timestamp' => $interval - 1,
+  ))
+    ->condition('uid', $user->uid)
+    ->condition('timestamp', $interval, '>=')
+  ->execute();
   }
 }
 

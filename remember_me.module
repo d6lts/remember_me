@@ -4,24 +4,24 @@
 /**
  * @file
  * Adds a "Remember me" checkbox to login forms.
- *
  */
 
+
 /**
- * Implementation of hook_init().
+ * Implements hook_init().
  */
 function remember_me_init() {
   global $user;
 
   // If we have a user logged in, then we have a session.
   if ($user->uid) {
-    if (isset($user->remember_me) && $user->remember_me && variable_get('remember_me_managed', 0) != 0) {
+    if ($user->data['remember_me'] && variable_get('remember_me_managed', 0) != 0) {
       // Set lifetime as configured via admin settings.
       if (variable_get('remember_me_lifetime', 604800) != ini_get('session.cookie_lifetime')) {
         _remember_me_set_lifetime(variable_get('remember_me_lifetime', 604800));
       }
     }
-    else if (!isset($user->remember_me) || !$user->remember_me) {
+    elseif (!$user->data['remember_me']) {
       // If we have cookie lifetime set already then unset it.
       if (0 != ini_get('session.cookie_lifetime')) {
         _remember_me_set_lifetime(0);
@@ -39,61 +39,40 @@ function _remember_me_set_lifetime($cookie_lifetime) {
   // session again.
   // Prevent sess_write from persisting the session object at this time,
   // it will happen on shutdown.
-  session_save_session(FALSE);
+  drupal_save_session(FALSE);
   session_write_close();
-  session_save_session(TRUE);
+  drupal_save_session(TRUE);
 
   ini_set('session.cookie_lifetime', $cookie_lifetime);
 
-  // Use remember_me_sess_read() to avoid reloading of user object, because
-  // it might be once more reloaded in some other hook_init().
-  session_set_save_handler(
-    "sess_open",
-    "sess_close",
-    "remember_me_sess_read",
-    "sess_write",
-    "sess_destroy_sid",
-    "sess_gc"
-  );
-  session_start();
+  // TODO: not overwriting session handler here anymore, still necessary?
+
+  drupal_session_started(FALSE);
+  drupal_session_initialize();
 }
 
 /**
- * Session handler 'read' callback.
+ * Implements hook_user_login().
  */
-function remember_me_sess_read() {
-  global $user;
-  static $run = FALSE;
-  if (!$run) {
-    $run = TRUE;
-    return !empty($user->session) ? $user->session : '';
-  }
-  $args = func_get_args();
-  return call_user_func_array('sess_read', $args);
-}
 
-/**
- * Implementation of hook_user().
- */
-function remember_me_user($op, &$edit, &$user, $category = NULL) {
-  if ($category === NULL && $op == 'login') {
-    $remember_me = isset($edit['remember_me']) ? $edit['remember_me'] : NULL;
-    if (isset($remember_me)) {
-      if ($user->uid) {
-        $user = user_save($user, array(
-          'remember_me' => (bool) $remember_me,
+function remember_me_user_login(&$edit, $account) {
+  $remember_me = isset($edit['input']['remember_me']) ? $edit['input']['remember_me'] : false;
+  if ($account->uid) {
+    var_dump ($remember_me);
+    user_save($account, array(
+      'data' => array ('remember_me' => (bool) $remember_me),
         ), NULL);
       }
-    }
+
+  // TODO: not tested if this still works
     if (variable_get('remember_me_phantom_session', 0)) {
       module_load_include('inc', 'remember_me', 'includes/remember_me');
       remember_me_manage_phantom_sessions();
     }
   }
-}
 
 /**
- * Implementation of hook_form_alter().
+ * Implements hook_form_alter().
  */
 function remember_me_form_alter(&$form, $form_state, $form_id) {
   $user_login_forms = array('user_login', 'user_login_block');
@@ -105,23 +84,23 @@ function remember_me_form_alter(&$form, $form_state, $form_id) {
 }
 
 /**
- * Implementation of hook_theme().
+ * Implements hook_theme().
  */
 function remember_me_theme() {
   return array(
     'remember_me_settings_display' => array(
-      'arguments' => array('vars' => array()),
+      'variables' => array('vars' => array()),
       'file' => 'includes/remember_me.admin.inc',
     ),
   );
 }
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function remember_me_menu() {
   $items = array();
-  $items['admin/settings/remember_me'] = array(
+  $items['admin/config/system/remember_me'] = array(
     'title'            => 'Remember me settings',
     'description'      => 'Configure settings like session time out for remember_me module.',
     'page callback'    => 'drupal_get_form',
@@ -141,7 +120,7 @@ function remember_me_menu() {
     'page callback'    => 'remember_me_ajax_users_online',
   ) + $base;
 
-  $items['admin/settings/remember_me/users/online'] = array(
+  $items['admin/config/system/remember_me/users/online'] = array(
     'page callback'    => 'drupal_get_form',
     'page arguments'   => array('remember_me_ajax_users_online_form'),
     'title'            => "'Who's online' settings",
@@ -162,11 +141,11 @@ function remember_me_menu() {
 }
 
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  */
 function remember_me_help($path, $arg) {
   switch ($path) {
-    case 'admin/help#remember_me' :
+    case 'admin/help#remember_me':
       return t('Allows users to have persistent sessions via a checkbox "Remember me" on the login form.');
   }
 }

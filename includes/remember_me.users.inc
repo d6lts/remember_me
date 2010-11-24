@@ -27,6 +27,7 @@ function remember_me_ajax_users_online() {
 
       $output   = array();
       $output[] = ctools_ajax_command_remove( 'div.messages');
+      // TODO Please change this theme call to use an associative array for the $variables parameter.
       $output[] = ctools_ajax_command_before(
         'form#remember-me-admin-settings',
         theme('status_messages')

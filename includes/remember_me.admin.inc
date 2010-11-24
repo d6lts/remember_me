@@ -9,10 +9,10 @@
 /**
  * Implementation of menu callback.
  */
-function remember_me_admin_settings() {
+function remember_me_admin_settings($form, &$form_state) {
   global $user;
   $options = drupal_map_assoc(
-    array(3600, 10800, 21600, 43200, 86400, 172800, 259200, 604800, 1209600, 2419200),
+    array(3600, 10800, 21600, 43200, 86400, 172800, 259200, 604800, 1209600, 2592000, 5184000, 7776000),
     'format_interval'
   );
   $dependency = array();
@@ -37,14 +37,14 @@ function remember_me_admin_settings() {
   else {
     $link = l(
       t('Configure Who\'s online settings'),
-      'admin/settings/remember_me/users/online',
+      'admin/config/system/remember_me/users/online',
       array(
         'attributes' => array(
           'title' => t('Who\'s online settings.'),
           'class' => 'remember-me-users-online',
         ),
         'query' => array(
-          'destination' => 'admin/settings/remember_me',
+          'destination' => 'admin/config/system/remember_me',
         ),
       )
     );
@@ -54,7 +54,7 @@ function remember_me_admin_settings() {
     'remember' => array(
       '#type' => 'item',
       '#title' => t('Remember me'),
-      '#value' => $user->remember_me ? t('Yes') : t('No'),
+      '#value' => isset($user->data['remember_me']) && $user->data['remember_me'] ? t('Yes') : t('No'),
       '#description' => t("Current user chose at log in."),
     ),
     'session' => array(
@@ -74,7 +74,7 @@ function remember_me_admin_settings() {
   );
   $form['legend'] = array(
     '#type'        => 'markup',
-    '#value'       => theme('remember_me_settings_display', $vars),
+    '#markup'      => theme('remember_me_settings_display', array('vars' => $vars)),
   );
 
   $form['remember_me_phantom_session'] = array(
@@ -104,7 +104,7 @@ function remember_me_admin_settings() {
   $form['remember_me_checkbox'] = array(
     '#type' => 'checkbox',
     '#title' => t('Remember me field'),
-    '#default_value' => variable_get('remember_me_checkbox', 1),
+    '#default_value' => variable_get('remember_me_checkbox', 0),
     '#description' => t('Default state of the "Remember me" field on the login forms.'),
   );
 
@@ -112,21 +112,50 @@ function remember_me_admin_settings() {
 }
 
 
-function theme_remember_me_settings_display($vars) {
-  $rows = array();
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function theme_remember_me_settings_display($variables) {
+  $vars = $variables['vars'];
+  $cells = array();
   foreach($vars as $var) {
-    $desc = $var['#description'];
-    unset($var['#description']);
-    $output = '<div class="container-inline">'. theme('item', $var) .'</div>';
-    $output .= '<div class="description">'. $desc .'</div>';
+    $var['#title_display'] = 'before';
+    $element = array ('element' => array (
+      '#type' => 'markup',
+      '#children' => $var['#value'],
+      '#title' => $var['#title'],
+      '#title_display' => 'before',
+    ));
+    $output = '<div class="container-inline">' . theme('form_element', $element) . '</div>';
+    $output .= '<div class="description">' . $var['#description'] . '</div>';
+    $cells[] = $output;
+    /*
     $rows[] = $output;
     if(is_array($rows[0])) {
       $rows[1] = array($rows[1]);
     }
     else if(sizeof($rows) == 2) {
       $rows = array(array('data' => $rows, 'class' => 'even'));
+      break;
     }
+    */
   }
+  $rows = array (
+    0 => array (
+      0 => array ('data' => $cells[0]),
+      1 => array ('data' => $cells[1])),
+    1 => array (
+      0 => array ('data' => $cells[2]),
+      1 => array ('data' => '')));
 
-  return theme('table', array(), $rows);
+  //var_dump ($rows);
+  //$rows = array ();
+  //$rows[] = array (array ('data' => 'abc'), array ('data' => 'def'));
+  //var_dump ($rows);
+  //$rows = array (0 => array (0 => array ('data' => 'comment'), 1 => array ('data' => 'publish')));
+  //$rows = array();
+  $output = theme('table', array('rows' => $rows));
+  //var_dump ($output);
+  return $output;
 }
