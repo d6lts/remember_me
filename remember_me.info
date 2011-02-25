@@ -1,4 +1,3 @@
-; $Id$
 name = Remember me
 description = "Adds a ''Remember me'' checkbox to login forms."
 core = 7.x
