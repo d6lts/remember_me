@@ -28,7 +28,7 @@ function remember_me_manage_phantom_sessions() {
       t('Phantom session managed for %user, session trapped within %time timeout.'),
       array(
         '%user' => $user->name,
-        '%id'   => $user-uid,
+        '%id'   => $user->uid,
         '%time' => format_interval(variable_get('user_block_seconds_online', 900))
       ),
       WATCHDOG_NOTICE
