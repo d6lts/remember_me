@@ -53,22 +53,28 @@ function _remember_me_set_lifetime($cookie_lifetime) {
 /**
  * Implements hook_user_login().
  */
-
 function remember_me_user_login(&$edit, $account) {
   $remember_me = isset($edit['input']['remember_me']) ? $edit['input']['remember_me'] : false;
   if ($account->uid) {
     var_dump ($remember_me);
-    user_save($account, array(
-      'data' => array ('remember_me' => (bool) $remember_me),
-        ), NULL);
-      }
+    user_save($account, array ('remember_me' => (bool) $remember_me));
+  }
 
   // TODO: not tested if this still works
-    if (variable_get('remember_me_phantom_session', 0)) {
-      module_load_include('inc', 'remember_me', 'includes/remember_me');
-      remember_me_manage_phantom_sessions();
-    }
+  if (variable_get('remember_me_phantom_session', 0)) {
+    module_load_include('inc', 'remember_me', 'includes/remember_me');
+    remember_me_manage_phantom_sessions();
   }
+}
+
+/**
+ * Implements hook_user_presave().
+ */
+function remember_me_user_presave(&$edit, $account, $category) {
+  if (isset($edit['remember_me'])) {
+    $edit['data']['remember_me'] = $edit['remember_me'];
+  }
+}
 
 /**
  * Implements hook_form_alter().
