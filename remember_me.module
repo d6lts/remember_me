@@ -10,7 +10,7 @@
  */
 function remember_me_init() {
   global $user;
-dpr($user);
+
   // If we have a user logged in, then we have a session.
   if ($user->uid) {
     if (isset($user->remember_me) && variable_get('remember_me_managed', 0) != 0) {
