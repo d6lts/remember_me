@@ -103,10 +103,16 @@ function remember_me_admin_settings($form, &$form_state) {
   $form['remember_me_checkbox'] = array(
     '#type' => 'checkbox',
     '#title' => t('Remember me field'),
-    '#default_value' => variable_get('remember_me_checkbox', 0),
+    '#default_value' => variable_get('remember_me_checkbox', 1),
     '#description' => t('Default state of the "Remember me" field on the login forms.'),
   );
-
+  $form['remember_me_checkbox_visible'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Remember me field visible'),
+    '#default_value' => variable_get('remember_me_checkbox_visible', 1),
+    '#description' => t('Should the "Remember me" field be visible on the login forms.'),
+  );
+  
   return system_settings_form($form);
 }
 

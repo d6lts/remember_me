@@ -47,7 +47,7 @@ db_update('sessions')
 function remember_me_insert_checkbox(&$form) {
   $form1['remember_me'] = array(
     '#title'         => t('Remember me'),
-    '#type'          => 'checkbox',
+    '#type'          => variable_get('remember_me_checkbox_visible', 1) ? 'checkbox' : 'hidden',
     '#default_value' => variable_get('remember_me_checkbox', 1),
   );
   _remember_me_array_insert_after_key('pass', $form, $form1);
