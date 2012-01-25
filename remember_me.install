@@ -37,10 +37,10 @@ function remember_me_disable() {
  * Implements hook_uninstall().
  */
 function remember_me_uninstall() {
-  $variables = variable_initialize();
+  global $conf;
   
   // Delete all remember_me variables
-  foreach ($variables as $key => $value) {
+  foreach ($conf as $key => $value) {
     if (strpos($key, 'remember_me') === 0) {
       variable_del($key);
     }
