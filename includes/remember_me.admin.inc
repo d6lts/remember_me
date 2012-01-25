@@ -19,7 +19,7 @@ function remember_me_admin_settings() {
     'remember' => array(
       '#type' => 'item',
       '#title' => t('Remember me'),
-      '#value' => (isset($user->remember_me) ? t('Yes') : t('No'),
+      '#value' => isset($user->remember_me) ? t('Yes') : t('No'),
       '#description' => t('Current user chose at log in.'),
     ),
     'session' => array(
