@@ -13,8 +13,7 @@ function remember_me_init() {
 
   // If we have a user logged in, then we have a session.
   if ($user->uid) {
-    if (isset($user->data['remember_me']) && $user->data['remember_me'] && 
-          variable_get('remember_me_managed', 0) != 0) {
+    if (isset($user->data['remember_me']) && variable_get('remember_me_managed', 0) != 0) {
       // Set lifetime as configured via admin settings.
       if (variable_get('remember_me_lifetime', 604800) != ini_get('session.cookie_lifetime')) {
         _remember_me_set_lifetime(variable_get('remember_me_lifetime', 604800));
