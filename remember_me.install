@@ -31,16 +31,16 @@ function remember_me_disable() {
  */
 function remember_me_uninstall() {
   global $conf;
-  
+
   // Delete all remember_me variables
   foreach ($conf as $key => $value) {
     if (strpos($key, 'remember_me') === 0) {
       variable_del($key);
     }
-  }  
+  }
 
   // Remove record from system table when uninstalling the module to reset weight
   db_query("DELETE FROM {system} WHERE name = 'remember_me'");
-  
+
   drupal_set_message(t('Successfully removed all data for remember_me.'));
 }

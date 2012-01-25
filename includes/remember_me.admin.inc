@@ -59,12 +59,12 @@ function remember_me_admin_settings() {
     '#default_value' => variable_get('remember_me_checkbox_visible', 1),
     '#description' => t('Should the "Remember me" field be visible on the login forms.'),
   );
-  
+
   return system_settings_form($form);
 }
 
 /**
- * Theme callback function to dispaly status information. 
+ * Theme callback function to dispaly status information.
  */
 function theme_remember_me_settings_display($vars) {
   $rows = array();
