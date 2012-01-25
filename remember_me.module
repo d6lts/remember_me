@@ -116,25 +116,14 @@ function remember_me_theme() {
 function remember_me_menu() {
   $items = array();
   $items['admin/settings/remember_me'] = array(
-    'title'            => 'Remember me settings',
-    'description'      => 'Configure settings like session time out for remember_me module.',
-    'page callback'    => 'drupal_get_form',
-    'page arguments'   => array('remember_me_admin_settings'),
+    'title' => 'Remember me settings',
+    'description' => 'Configure settings like session time out for remember_me module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('remember_me_admin_settings'),
     'access arguments' => array('administer site configuration'),
-    'file'             => 'includes/remember_me.admin.inc',
-    'type'             => MENU_NORMAL_ITEM
+    'file' => 'includes/remember_me.admin.inc',
+    'type' => MENU_NORMAL_ITEM
   );
-
-  $base = array(
-    'type'             => MENU_CALLBACK,
-    'access arguments' => array('administer site configuration'),
-    'file'             => 'includes/remember_me.test.inc',
-  );
-
-  $items['remember_me/test'] = array(
-    'page callback'    => 'drupal_get_form',
-    'page arguments'   => array('test_fapi_edit'),
-  ) + $base;
 
   return $items;
 }
