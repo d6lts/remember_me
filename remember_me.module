@@ -112,17 +112,6 @@ function remember_me_menu() {
     'type' => MENU_NORMAL_ITEM
   );
 
-  $base = array(
-    'type' => MENU_CALLBACK,
-    'access arguments' => array('administer site configuration'),
-    'file' => 'includes/remember_me.test.inc',
-  );
-
-  $items['remember_me/test'] = array(
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('test_fapi_edit'),
-  ) + $base;
-
   return $items;
 }
 
