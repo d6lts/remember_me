@@ -52,7 +52,7 @@ function _remember_me_set_lifetime($cookie_lifetime) {
  */
 function remember_me_user_login(&$edit, $account) {
   if ($account->uid) {
-    user_save($account, array ('remember_me' => $edit['input']['remember_me']));
+    user_save($account, array('remember_me' => $edit['input']['remember_me']));
   }
 }
 

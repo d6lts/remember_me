@@ -69,9 +69,9 @@ function remember_me_admin_settings($form, &$form_state) {
 function theme_remember_me_settings_display($variables) {
   $vars = $variables['vars'];
   $cells = array();
-  foreach($vars as $var) {
+  foreach ($vars as $var) {
     $var['#title_display'] = 'before';
-    $element = array ('element' => array (
+    $element = array('element' => array(
       '#type' => 'markup',
       '#children' => $var['#value'],
       '#title' => $var['#title'],
@@ -81,10 +81,10 @@ function theme_remember_me_settings_display($variables) {
     $output .= '<div class="description">' . $var['#description'] . '</div>';
     $cells[] = $output;
   }
-  $rows = array (
-    0 => array (
-      0 => array ('data' => $cells[0]),
-      1 => array ('data' => $cells[1])),
+  $rows = array(
+    0 => array(
+      0 => array('data' => $cells[0]),
+      1 => array('data' => $cells[1])),
   );
 
   return theme('table', array('rows' => $rows));

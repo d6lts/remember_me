@@ -6,8 +6,7 @@
  */
 
 /**
- * Try to insert 'Remember me' checkbox between 'Username', 'Password' and
- * 'Log in' form elements.
+ * Try to insert 'Remember me' checkbox between 'Username', 'Password' and 'Log in' form elements.
  */
 function remember_me_insert_checkbox(&$form) {
   $form1['remember_me'] = array(
@@ -23,8 +22,7 @@ function remember_me_insert_checkbox(&$form) {
 }
 
 /**
- * Insert elements into array after the element with $searck_key key and
- * maintain index association.
+ * Insert elements into array after the element with $searck_key key and maintain index association.
  *
  * @param $search_key
  *   Key of array element to insert elements after.
