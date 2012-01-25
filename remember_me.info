@@ -5,4 +5,3 @@ files[] = remember_me.install
 files[] = remember_me.module
 files[] = includes/remember_me.admin.inc
 files[] = includes/remember_me.inc
-files[] = includes/remember_me.users.inc
