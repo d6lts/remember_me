@@ -20,18 +20,18 @@ function remember_me_admin_settings($form, &$form_state) {
       '#type' => 'item',
       '#title' => t('Remember me'),
       '#value' => isset($user->data['remember_me']) && $user->data['remember_me'] ? t('Yes') : t('No'),
-      '#description' => t("Current user chose at log in."),
+      '#description' => t('Current user chose at log in.'),
     ),
     'session' => array(
       '#type' => 'item',
       '#title' => t('Session lifetime'),
       '#value' => format_interval(ini_get('session.cookie_lifetime')),
-      '#description' => t("Currently configured session cookie lifetime."),
+      '#description' => t('Currently configured session cookie lifetime.'),
     ),
   );
   $form['legend'] = array(
-    '#type'        => 'markup',
-    '#markup'      => theme('remember_me_settings_display', array('vars' => $vars)),
+    '#type' => 'markup',
+    '#markup' => theme('remember_me_settings_display', array('vars' => $vars)),
   );
 
   $form['remember_me_managed'] = array(
