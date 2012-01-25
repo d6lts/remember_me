@@ -59,12 +59,6 @@ function remember_me_user_login(&$edit, $account) {
   if ($account->uid) {
     user_save($account, array ('remember_me' => (bool) $remember_me));
   }
-
-  // TODO: not tested if this still works
-  if (variable_get('remember_me_phantom_session', 0)) {
-    module_load_include('inc', 'remember_me', 'includes/remember_me');
-    remember_me_manage_phantom_sessions();
-  }
 }
 
 /**
@@ -115,22 +109,6 @@ function remember_me_menu() {
     'file'             => 'includes/remember_me.admin.inc',
     'type'             => MENU_NORMAL_ITEM
   );
-
-  $base = array(
-    'type'             => MENU_CALLBACK,
-    'access arguments' => array('administer site configuration'),
-    'file'             => 'includes/remember_me.users.inc',
-  );
-
-  $items['remember_me/ajax/users/online'] = array(
-    'page callback'    => 'remember_me_ajax_users_online',
-  ) + $base;
-
-  $items['admin/config/system/remember_me/users/online'] = array(
-    'page callback'    => 'drupal_get_form',
-    'page arguments'   => array('remember_me_ajax_users_online_form'),
-    'title'            => "'Who's online' settings",
-  ) + $base;
 
   $base = array(
     'type'             => MENU_CALLBACK,
