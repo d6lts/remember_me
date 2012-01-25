@@ -21,7 +21,7 @@ function remember_me_init() {
         _remember_me_set_lifetime(variable_get('remember_me_lifetime', 604800));
       }
     }
-    elseif (isset($user->data['remember_me']) && !$user->data['remember_me']) {
+    elseif (!isset($user->data['remember_me'])) {
       // If we have cookie lifetime set already then unset it.
       if (0 != ini_get('session.cookie_lifetime')) {
         _remember_me_set_lifetime(0);
@@ -53,9 +53,8 @@ function _remember_me_set_lifetime($cookie_lifetime) {
  * Implements hook_user_login().
  */
 function remember_me_user_login(&$edit, $account) {
-  $remember_me = isset($edit['input']['remember_me']) ? $edit['input']['remember_me'] : FALSE;
   if ($account->uid) {
-    user_save($account, array ('remember_me' => (bool) $remember_me));
+    user_save($account, array ('remember_me' => $edit['input']['remember_me']));
   }
 }
 
@@ -65,7 +64,13 @@ function remember_me_user_login(&$edit, $account) {
 function remember_me_user_presave(&$edit, $account, $category) {
   // Make sure that our form value 'remember_me' is stored as data 'remember_me'.
   if (isset($edit['remember_me'])) {
-    $edit['data']['remember_me'] = $edit['remember_me'];
+    if (!isset($edit['data'])) {
+      $edit['data'] = array();
+    }
+    $edit['data']['remember_me'] = (bool) $edit['remember_me'];
+  }
+  else {
+    unset($edit['data']['remember_me']);
   }
 }
 
