@@ -3,7 +3,6 @@
 /**
  * @file
  * Adds a "Remember me" checkbox to login forms.
- *
  */
 
 /**
@@ -20,7 +19,7 @@ function remember_me_init() {
         _remember_me_set_lifetime(variable_get('remember_me_lifetime', 604800));
       }
     }
-    else if (!isset($user->remember_me) || !$user->remember_me) {
+    elseif (!isset($user->remember_me) || !$user->remember_me) {
       // If we have cookie lifetime set already then unset it.
       if (0 != ini_get('session.cookie_lifetime')) {
         _remember_me_set_lifetime(0);
@@ -47,12 +46,12 @@ function _remember_me_set_lifetime($cookie_lifetime) {
   // Use remember_me_sess_read() to avoid reloading of user object, because
   // it might be once more reloaded in some other hook_init().
   session_set_save_handler(
-    "sess_open",
-    "sess_close",
-    "remember_me_sess_read",
-    "sess_write",
-    "sess_destroy_sid",
-    "sess_gc"
+    'sess_open',
+    'sess_close',
+    'remember_me_sess_read',
+    'sess_write',
+    'sess_destroy_sid',
+    'sess_gc'
   );
   session_start();
 }

@@ -20,18 +20,18 @@ function remember_me_admin_settings() {
       '#type' => 'item',
       '#title' => t('Remember me'),
       '#value' => (isset($user->remember_me) && $user->remember_me) ? t('Yes') : t('No'),
-      '#description' => t("Current user chose at log in."),
+      '#description' => t('Current user chose at log in.'),
     ),
     'session' => array(
       '#type' => 'item',
       '#title' => t('Session lifetime'),
       '#value' => format_interval(ini_get('session.cookie_lifetime')),
-      '#description' => t("Currently configured session cookie lifetime."),
+      '#description' => t('Currently configured session cookie lifetime.'),
     ),
   );
   $form['legend'] = array(
-    '#type'        => 'markup',
-    '#value'       => theme('remember_me_settings_display', $vars),
+    '#type' => 'markup',
+    '#value' => theme('remember_me_settings_display', $vars),
   );
 
   $form['remember_me_managed'] = array(
@@ -68,16 +68,16 @@ function remember_me_admin_settings() {
  */
 function theme_remember_me_settings_display($vars) {
   $rows = array();
-  foreach($vars as $var) {
+  foreach ($vars as $var) {
     $desc = $var['#description'];
     unset($var['#description']);
-    $output = '<div class="container-inline">'. theme('item', $var) .'</div>';
-    $output .= '<div class="description">'. $desc .'</div>';
+    $output = '<div class="container-inline">' . theme('item', $var)  .'</div>';
+    $output .= '<div class="description">' . $desc . '</div>';
     $rows[] = $output;
-    if(is_array($rows[0])) {
+    if (is_array($rows[0])) {
       $rows[1] = array($rows[1]);
     }
-    else if(sizeof($rows) == 2) {
+    elseif (sizeof($rows) == 2) {
       $rows = array(array('data' => $rows, 'class' => 'even'));
     }
   }
