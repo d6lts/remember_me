@@ -45,8 +45,6 @@ function _remember_me_set_lifetime($cookie_lifetime) {
 
   ini_set('session.cookie_lifetime', $cookie_lifetime);
 
-  // TODO: not overwriting session handler here anymore, still necessary?
-
   drupal_session_started(FALSE);
   drupal_session_initialize();
 }
