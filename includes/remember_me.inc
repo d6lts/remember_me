@@ -15,10 +15,10 @@ function remember_me_insert_checkbox(&$form) {
     '#default_value' => variable_get('remember_me_checkbox', 1),
   );
   _remember_me_array_insert_after_key('pass', $form, $form1);
-  $form['name']['#attributes']['tabindex'] = '1';
-  $form['pass']['#attributes']['tabindex'] = '2';
-  $form['remember_me']['#attributes']['tabindex'] = '3';
-  $form['submit']['#attributes']['tabindex'] = '4';
+  $form['name']['#attributes']['tabindex'] = '99991';
+  $form['pass']['#attributes']['tabindex'] = '99992';
+  $form['remember_me']['#attributes']['tabindex'] = '99993';
+  $form['actions']['submit']['#attributes']['tabindex'] = '99994';
 }
 
 /**
