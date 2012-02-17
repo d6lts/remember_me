@@ -62,6 +62,7 @@ function remember_me_user_login(&$edit, $account) {
  * Implements hook_user_presave().
  */
 function remember_me_user_presave(&$edit, $account, $category) {
+  // only listen to remember me events
   if ($category != 'remember-me') {
     return;
   }
