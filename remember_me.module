@@ -76,7 +76,7 @@ function remember_me_sess_read() {
 function remember_me_user($op, &$edit, &$user, $category = NULL) {
   if ($category === NULL && $op == 'login') {
     // Only keep the state in user object if remember_me is checked, storing NULL will remove property.
-    $remember_me = isset($edit['remember_me']) && !empty($edit['remember_me']) ? $edit['remember_me'] : NULL;
+    $remember_me = !empty($edit['remember_me']) ? $edit['remember_me'] : NULL;
     if ($user->uid) {
       $user = user_save($user, array('remember_me' => $remember_me));
     }
