@@ -51,8 +51,6 @@ function _remember_me_set_lifetime($cookie_lifetime) {
  * Implements hook_user_login().
  */
 function remember_me_user_login(&$edit, $account) {
-  dpm(field_info_instance('user', 'field_check_me', 'user'), 'instance');
-  dpm(node_load(2)->field_checit, 'field');
   if ($account->uid) {
     user_save($account, array('remember_me' => !empty($edit['input']['remember_me'])), 'remember-me');
   }
