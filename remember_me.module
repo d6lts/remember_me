@@ -51,8 +51,10 @@ function _remember_me_set_lifetime($cookie_lifetime) {
  * Implements hook_user_login().
  */
 function remember_me_user_login(&$edit, $account) {
+  dpm(field_info_instance('user', 'field_check_me', 'user'), 'instance');
+  dpm(node_load(2)->field_checit, 'field');
   if ($account->uid) {
-    user_save($account, array('remember_me' => !empty($edit['input']['remember_me'])), NULL);
+    user_save($account, array('remember_me' => !empty($edit['input']['remember_me'])), 'remember-me');
   }
 }
 
@@ -60,14 +62,18 @@ function remember_me_user_login(&$edit, $account) {
  * Implements hook_user_presave().
  */
 function remember_me_user_presave(&$edit, $account, $category) {
+  if ($category != 'remember-me') {
+    return;
+  }
+  
   // Make sure that our form value 'remember_me' is stored as data 'remember_me'.
-  if (!empty($edit['remember_me']) && $category === NULL) {
+  if (!empty($edit['remember_me'])) {
     if (!isset($edit['data'])) {
       $edit['data'] = array();
     }
     $edit['data']['remember_me'] = (bool) $edit['remember_me'];
   }
-  elseif ($category === NULL) {
+  else {
     unset($edit['data']['remember_me']);
   }
 }
@@ -76,11 +82,34 @@ function remember_me_user_presave(&$edit, $account, $category) {
  * Implements hook_form_alter().
  */
 function remember_me_form_alter(&$form, $form_state, $form_id) {
-  $user_login_forms = array('user_login', 'user_login_block');
-
-  if (in_array($form_id, $user_login_forms)) {
-    module_load_include('inc', 'remember_me', 'includes/remember_me');
-    remember_me_insert_checkbox($form);
+  // Only make changes to these forms.
+  if (in_array($form_id, array('user_login', 'user_login_block'))) {
+    
+    // Configuration for the remember me checkbox.
+    $cbox['remember_me'] = array(
+      '#title' => t('Remember me'),
+      '#type' => variable_get('remember_me_checkbox_visible', 1) ? 'checkbox' : 'hidden',
+      '#default_value' => variable_get('remember_me_checkbox', 1),
+      '#attributes' => array('tabindex' => 1),
+    );
+  
+    $que = array();
+    
+    // Now lets try and insert it right after the password field in the document
+    // and set the tabindex to 1 for each field so that we can jump in sequence.
+    while (list($key, $val) = each($form)) {
+      switch ($key) {
+        case 'name':
+        case 'pass' :
+          $val['#attributes']['tabindex'] = 1;
+        break;
+        case 'actions':
+          $form = $que + $cbox + $form;
+          $form[$key]['submit']['#attributes']['tabindex'] = 1;
+        return;
+      }  
+      $que[$key] = $val;
+    } 
   }
 }
 
@@ -91,7 +120,7 @@ function remember_me_theme() {
   return array(
     'remember_me_settings_display' => array(
       'variables' => array('vars' => array()),
-      'file' => 'includes/remember_me.admin.inc',
+      'file' => 'remember_me.admin.inc',
     ),
   );
 }
@@ -107,7 +136,7 @@ function remember_me_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('remember_me_admin_settings'),
     'access arguments' => array('administer site configuration'),
-    'file' => 'includes/remember_me.admin.inc',
+    'file' => 'remember_me.admin.inc',
     'type' => MENU_NORMAL_ITEM
   );
 

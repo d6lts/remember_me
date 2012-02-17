@@ -67,25 +67,21 @@ function remember_me_admin_settings($form, &$form_state) {
  * Theme callback function to dispaly status information.
  */
 function theme_remember_me_settings_display($variables) {
-  $vars = $variables['vars'];
-  $cells = array();
-  foreach ($vars as $var) {
-    $var['#title_display'] = 'before';
-    $element = array('element' => array(
-      '#type' => 'markup',
-      '#children' => $var['#value'],
-      '#title' => $var['#title'],
-      '#title_display' => 'before',
-    ));
+  $rows = array(array());
+  foreach ($variables['vars'] as $var) {
+    $element = array(
+      'element' => array(
+          '#type' => 'markup',
+          '#children' => $var['#value'],
+          '#title' => $var['#title'],
+          '#title_display' => 'before',
+      )
+    );
+
     $output = '<div class="container-inline">' . theme('form_element', $element) . '</div>';
     $output .= '<div class="description">' . $var['#description'] . '</div>';
-    $cells[] = $output;
+    
+    $rows[0][] = array( 'data' => $output);
   }
-  $rows = array(
-    0 => array(
-      0 => array('data' => $cells[0]),
-      1 => array('data' => $cells[1])),
-  );
-
   return theme('table', array('rows' => $rows));
 }
