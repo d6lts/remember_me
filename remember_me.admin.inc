@@ -68,6 +68,7 @@ function remember_me_admin_settings($form, &$form_state) {
  */
 function theme_remember_me_settings_display($variables) {
   $rows = array(array());
+  
   foreach ($variables['vars'] as $var) {
     $element = array(
       'element' => array(
