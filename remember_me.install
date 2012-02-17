@@ -26,7 +26,7 @@ function remember_me_disable() {
   $users = user_load_multiple(FALSE);
   foreach ($users as $user) {
     if ($user->uid) {
-      user_save($user, array('remember_me' => NULL));
+      user_save($user, array('remember_me' => NULL), NULL);
     }
   }
 
