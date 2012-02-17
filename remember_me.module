@@ -78,7 +78,9 @@ function remember_me_user($op, &$edit, &$user, $category = NULL) {
     // Only keep the state in user object if remember_me is checked, storing NULL will remove property.
     $remember_me = !empty($edit['remember_me']) ? $edit['remember_me'] : NULL;
     if ($user->uid) {
-      $user = user_save($user, array('remember_me' => $remember_me));
+      // Use the category remember-me to identify this persistence request 
+      // and hopefully avoid conflicts with other hook_user() implementations. 
+      $user = user_save($user, array('remember_me' => $remember_me), 'remember-me');
     }
   }
 }
