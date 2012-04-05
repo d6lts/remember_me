@@ -101,7 +101,6 @@ function remember_me_form_alter(&$form, $form_state, $form_id) {
     );
   
     $que = array();
-    dpr($form, 'b4');
     // Now lets try and insert it right after the password field in the document
     // and set the tabindex to 1 for each field so that we can jump in sequence.
     while (list($key, $val) = each($form)) {
@@ -113,7 +112,6 @@ function remember_me_form_alter(&$form, $form_state, $form_id) {
         case 'submit':
           $form = $que + $cbox + $form;
           $form[$key]['#attributes']['tabindex'] = 1;
-          dpm($form, 'b8');
         return;
       }  
       $que[$key] = $val;
@@ -144,7 +142,7 @@ function remember_me_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('remember_me_admin_settings'),
     'access arguments' => array('administer site configuration'),
-    'file' => 'includes/remember_me.admin.inc',
+    'file' => 'remember_me.admin.inc',
     'type' => MENU_NORMAL_ITEM
   );
 
